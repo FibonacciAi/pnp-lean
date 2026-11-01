@@ -79,4 +79,17 @@ theorem polyBounded_add {f g : ℕ → ℕ} (hf : PolyBounded f) (hg : PolyBound
   refine ⟨p + q, fun n => ?_⟩
   simpa [eval_add] using Nat.add_le_add (hp n) (hq n)
 
+theorem polyBounded_comp {f g : ℕ → ℕ} (hf : PolyBounded f) (hg : PolyBounded g)
+    (hmono : Monotone f) : PolyBounded (f ∘ g) := by
+  obtain ⟨p, hp⟩ := hf
+  obtain ⟨q, hq⟩ := hg
+  refine ⟨p.comp q, fun n => ?_⟩
+  calc f (g n) ≤ f (q.eval n) := hmono (hq n)
+    _ ≤ p.eval (q.eval n) := hp _
+    _ = (p.comp q).eval n := (eval_comp ..).symm
+
+@[simp] theorem encode_decode_bool (b : Bool) :
+    boolEnc.decode (boolEnc.encode b) = some b := by
+  cases b <;> rfl
+
 end PNP
