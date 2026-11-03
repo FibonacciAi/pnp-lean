@@ -51,4 +51,14 @@ theorem P_subset_NP : P ⊆ NP := by
   refine ⟨{ R := fun x _ => L x, bound := 0, poly := ⟨Polynomial.X, by simp⟩,
             spec := fun x => ⟨fun h => ⟨[], by simp, h⟩, fun ⟨_, _, h⟩ => h⟩ }⟩
 
+/-- `P` is closed under polynomial-time reductions. -/
+theorem P_of_reduces {L₁ L₂ : Lang} (h : L₁ ≤ₚ L₂) (h₂ : L₂ ∈ P) : L₁ ∈ P := by
+  obtain ⟨⟨f, ⟨hf⟩, hcorr⟩⟩ := h
+  obtain ⟨hdec, ⟨hM⟩⟩ := h₂
+  classical
+  refine ⟨inferInstance, ⟨?_⟩⟩
+  have : L₁.chi = L₂.chi ∘ f := by
+    funext x; simp [Lang.chi, hcorr x]
+  exact this ▸ hf.comp hM
+
 end PNP
