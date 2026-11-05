@@ -60,6 +60,19 @@ def encodeLit (l : Literal) : List Bool :=
 def encodeCNF (φ : CNF) : List Bool :=
   φ.flatMap fun c => (c.flatMap encodeLit) ++ [false, false]
 
+/-- Left inverse of `encodeCNF` (returns `[]` on malformed input). -/
+def decodeCNF : List Bool → CNF
+  | [] => []
+  | bs =>
+    let (c, rest) := decodeClause bs
+    c :: decodeCNF rest
+decreasing_by exact decodeClause_lt bs ‹_›
+
+@[simp] theorem decodeCNF_encodeCNF (φ : CNF) : decodeCNF (encodeCNF φ) = φ := by
+  induction φ with
+  | nil => rfl
+  | cons c φ ih => rw [encodeCNF, List.flatMap_cons, decodeCNF, decodeClause_append]; simp [ih]
+
 theorem encodeCNF_length_le (φ : CNF) :
     (encodeCNF φ).length ≤ 4 * (φ.length + φ.join.length) * (Nat.size φ.numVars + 1) := by
   induction φ with
