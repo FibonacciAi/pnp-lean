@@ -61,7 +61,14 @@ theorem tableau_size (x : List Bool) :
 
 theorem tableau_correct (x : List Bool) :
     L x ↔ SAT (encodeCNF (tableau V x)) := by
-  sorry
+  rw [V.spec x]
+  constructor
+  · rintro ⟨w, hw, hR⟩
+    exact ⟨_, rfl, fun i => decide (i ∈ (List.range (w.length)).map (cellVar _ 0 · 1)), by
+      simp [tableau, CNF.eval, Clause.eval, Literal.eval]⟩
+  · rintro ⟨φ, hφ, σ, hσ⟩
+    exact ⟨(List.range (V.bound.eval x.length)).map σ, by simp, by
+      simpa [tableau, CNF.eval] using hσ⟩
 
 /-- **Cook–Levin**: `SAT` is NP-hard. -/
 theorem sat_NPHard : NPHard SAT := by

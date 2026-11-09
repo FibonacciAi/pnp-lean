@@ -87,4 +87,12 @@ def SAT : Lang := fun x => ∃ φ : CNF, encodeCNF φ = x ∧ ∃ σ, φ.eval σ
 /-- The language of satisfiable 3-CNF formulas. -/
 def ThreeSAT : Lang := fun x => ∃ φ : CNF, encodeCNF φ = x ∧ φ.IsKCNF 3 ∧ ∃ σ, φ.eval σ = true
 
+/-- Only the first `numVars` values of an assignment matter. -/
+theorem CNF.eval_congr {φ : CNF} {σ τ : Assignment}
+    (h : ∀ v < φ.numVars, σ v = τ v) : φ.eval σ = φ.eval τ := by
+  unfold CNF.eval Clause.eval
+  congr 1; funext c; congr 1; funext l
+  simp only [Literal.eval]
+  split <;> simp [h l.var (by omega)]
+
 end PNP
