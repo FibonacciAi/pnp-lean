@@ -32,8 +32,6 @@ open Computability Polynomial Turing
 
 namespace PNP
 
-universe u
-
 /-- A language is a predicate on bitstrings. -/
 abbrev Lang := List Bool → Prop
 
