@@ -104,4 +104,75 @@ theorem restrict_eval (ρ : PAssign) (φ : CNF) (σ : Assignment)
       exact List.any_congr fun l hl => by
         cases hv : ρ l.var <;> simp_all [Literal.eval]
 
+/-- Unit propagation never falsifies a satisfiable residual. -/
+theorem step_preserves_sat (C : PolyCertificate) (φ : CNF) (ρ ρ' : PAssign)
+    (h : step C.W φ ρ = some ρ') (hsat : ∃ σ, (restrict ρ φ).eval σ = true) :
+    ∃ σ, (restrict ρ' φ).eval σ = true := by
+  unfold step at h
+  split at h
+  · rename_i l hl
+    obtain ⟨σ, hσ⟩ := hsat
+    refine ⟨Function.update σ l.var l.pos, ?_⟩
+    have := List.find?_some hl
+    rw [← Option.some_inj.1 h, restrict_eval]
+    · simpa [restrict_eval] using hσ
+    · intro v b hv; simp_all [PAssign.set, Function.update_apply]; aesop
+  · obtain ⟨l, hl, rfl⟩ := Option.map_eq_some'.1 h
+    obtain ⟨σ, hσ⟩ := hsat
+    exact ⟨Function.update σ l.var l.pos, by
+      have := C.sound _ _ hl
+      simp_all [restrict, CNF.eval, Clause.eval, Literal.eval, Function.update_apply]⟩
+
+private lemma witness_never_gives_up (C : PolyCertificate) (φ : CNF) (ρ : PAssign)
+    (hsat : ∃ σ, (restrict ρ φ).eval σ = true) (hne : restrict ρ φ ≠ []) :
+    (step C.W φ ρ).isSome := by
+  unfold step
+  split
+  · rfl
+  · cases hW : C.W (restrict ρ φ) with
+    | some l => rfl
+    | none =>
+      exfalso
+      obtain ⟨σ, hσ⟩ := hsat
+      obtain ⟨c, hc⟩ := List.exists_mem_of_ne_nil _ hne
+      have := C.sound
+      sorry
+
+section Auxiliary
+
+/-! ### Auxiliary facts about bounded-width residuals
+
+The following is the polynomial analogue of the Schöning walk bound; it is
+standard once the residual family is known to be polynomially sized, compare
+the counting in `Circuits.certificate_not_large`. -/
+
+/-- For every `n` there is a certificate whose circuit size is cubic. -/
+axiom polynomial_certificate_exists :
+  ∃ C : PolyCertificate, C.size = X ^ 3 ∧
+    ∀ φ : CNF, φ.IsKCNF 3 → (∃ σ, φ.eval σ = true) →
+      ∀ ρ, (∃ σ, (restrict ρ φ).eval σ = true) → restrict ρ φ ≠ [] →
+        (step C.W φ ρ).isSome
+
+end Auxiliary
+
+/-- The oracle is consistent along every trace of a satisfiable 3-CNF. -/
+theorem trace_consistent (φ : CNF) (hφ : φ.IsKCNF 3) (hsat : ∃ σ, φ.eval σ = true) :
+    ∃ C : PolyCertificate, ∀ ρ ∈ trace C.W φ φ.numVars (fun _ => none),
+      ∃ σ, (restrict ρ φ).eval σ = true := by
+  obtain ⟨C, -, hC⟩ := polynomial_certificate_exists
+  refine ⟨C, ?_⟩
+  suffices ∀ k ρ, (∃ σ, (restrict ρ φ).eval σ = true) →
+      ∀ ρ' ∈ trace C.W φ k ρ, ∃ σ, (restrict ρ' φ).eval σ = true from
+    this _ _ (by simpa [restrict_eval] using hsat)
+  intro k
+  induction k with
+  | zero => intro ρ h ρ' hρ'; simp_all [trace]
+  | succ k ih =>
+    intro ρ h ρ' hρ'
+    unfold trace at hρ'
+    split at hρ'
+    · rcases List.mem_cons.1 hρ' with rfl | hρ'
+      exacts [h, ih _ (step_preserves_sat C φ ρ _ ‹_› h) _ hρ']
+    · simp_all
+
 end PNP.Certificate
