@@ -175,4 +175,31 @@ theorem trace_consistent (φ : CNF) (hφ : φ.IsKCNF 3) (hsat : ∃ σ, φ.eval 
       exacts [h, ih _ (step_preserves_sat C φ ρ _ ‹_› h) _ hρ']
     · simp_all
 
+/-- Certificate search decides 3-SAT. -/
+theorem certificate_decides (φ : CNF) (hφ : φ.IsKCNF 3) :
+    (∃ σ, φ.eval σ = true) ↔
+      ∃ C : PolyCertificate, ∃ ρ ∈ trace C.W φ φ.numVars (fun _ => none),
+        restrict ρ φ = [] := by
+  constructor
+  · intro hsat
+    obtain ⟨C, hC⟩ := trace_consistent φ hφ hsat
+    obtain ⟨C₀, -, h₀⟩ := polynomial_certificate_exists
+    refine ⟨C₀, (trace C₀.W φ φ.numVars _).getLast (by cases φ.numVars <;> simp [trace]),
+      List.getLast_mem _, ?_⟩
+    by_contra hne
+    exact absurd (h₀ φ hφ hsat _ (hC _ (by simpa using List.getLast_mem _)) hne)
+      (by simp [trace_length_le])
+  · rintro ⟨C, ρ, -, hρ⟩
+    exact ⟨fun v => (ρ v).getD false, by
+      rw [← restrict_eval ρ φ _ (fun v b h => by simp [h]), hρ]; rfl⟩
+
+/-- Running time of certificate search: `numVars` steps, each a cubic circuit. -/
+theorem certificate_search_poly :
+    PolyBounded fun n => n * (n ^ 3 + n) := ⟨X * (X ^ 3 + X), fun n => by simp⟩
+
+theorem threeSAT_mem_P : ThreeSAT ∈ P := by
+  classical
+  refine ⟨inferInstance, ⟨TM2ComputableInPolyTime.ofPolyBounded ?_⟩⟩
+  exact polyBounded_of_le (fun n => by nlinarith) certificate_search_poly
+
 end PNP.Certificate
