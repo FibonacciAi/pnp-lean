@@ -53,7 +53,7 @@ noncomputable def tableau (x : List Bool) : CNF :=
         if a < b then some [⟨cellVar T t j a, false⟩, ⟨cellVar T t j b, false⟩] else none)
 
 theorem tableau_size (x : List Bool) :
-    (encodeCNF (tableau V x)).length ≤ 128 * (V.bound.eval x.length + x.length + 1) ^ 3 := by
+    (encodeCNF (tableau V x)).length ≤ 64 * (V.bound.eval x.length + x.length + 1) ^ 3 := by
   unfold tableau
   refine (encodeCNF_length_le _).trans ?_
   simp only [List.length_flatMap, List.sum_const, List.length_range, smul_eq_mul]

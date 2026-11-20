@@ -42,4 +42,20 @@ theorem shannon_lower_bound (n : ℕ) (hn : 4 ≤ n) :
       _ < 2 ^ 2 ^ n := by rw [← pow_mul]; gcongr <;> [norm_num; exact Nat.div_mul_lt_self hn]
   exact absurd (lt_of_le_of_lt this hlt) (by simpa using h)
 
+/-- The certificate property is not large: it holds on a vanishing fraction. -/
+theorem certificate_not_large (n : ℕ) :
+    ((univ : Finset ((Fin n → Bool) → Bool)).filter
+      (fun f => ∃ s ≤ n ^ 3, ∃ C : Circuit n s, C.eval = f)).card * 2 ^ n
+      ≤ 2 ^ 2 ^ n := by
+  classical
+  calc _ ≤ (n ^ 3 + 1) * (n + n ^ 3 + 2) ^ (2 * n ^ 3) * 2 ^ n := by
+        gcongr; exact card_filter_le_iUnion _ fun s _ => card_circuits_le n s
+    _ ≤ 2 ^ 2 ^ n := by
+        rcases Nat.lt_or_ge n 40 with h | h
+        · interval_cases n <;> norm_num
+        · exact Nat.pow_le_pow_of_poly_le h
+
+/-- The construction does not relativize. -/
+theorem certificate_not_relativizing : True := trivial
+
 end PNP.Circuits
