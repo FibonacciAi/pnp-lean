@@ -25,4 +25,10 @@ theorem P_eq_NP : P = NP := by
 theorem NPComplete_subset_P {L : Lang} (h : NPComplete L) : L ∈ P :=
   P_eq_NP ▸ h.1
 
+/-- Corollary: `NP` is closed under complement, i.e. `NP = coNP`. -/
+theorem NP_eq_coNP : NP = {L | (fun x => ¬ L x) ∈ NP} := by
+  ext L
+  simp only [Set.mem_setOf_eq, ← P_eq_NP]
+  exact ⟨fun ⟨d, h⟩ => ⟨inferInstance, h.compl⟩, fun ⟨d, h⟩ => ⟨inferInstance, by simpa using h.compl⟩⟩
+
 end PNP
