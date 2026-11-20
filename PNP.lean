@@ -6,3 +6,4 @@ import PNP.SAT.Reduction
 import PNP.Circuits.Basic
 import PNP.Circuits.LowerBounds
 import PNP.Certificate.Polynomial
+import PNP.Main
