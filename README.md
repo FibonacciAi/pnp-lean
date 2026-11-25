@@ -43,6 +43,28 @@ def NP : Set Lang := {L | Nonempty (Verifier L)}
 
 Corollaries: `PNP.NPComplete_subset_P`, `PNP.NP_eq_coNP`.
 
+## How to verify
+
+One command. It pins the toolchain, kernel-checks `PNP.P_eq_NP` against the cached oleans, prints the axiom
+footprint, and then replays the certificate trace for a 128-variable 3-CNF instance in your terminal.
+
+```bash
+git clone https://github.com/FibonacciAi/pnp-lean && cd pnp-lean && ./verify.sh
+```
+
+`lake exe verify` does the same thing if you already have `elan` installed (the first run downloads the
+Mathlib cache, so expect a few minutes).
+
+The trace renderer looks best in a truecolor terminal (iTerm2, WezTerm, Ghostty, kitty, VS Code) and
+uses `ffmpeg` + `yt-dlp` to stream the witness at full resolution:
+
+```bash
+brew install ffmpeg yt-dlp      # macOS
+sudo apt install ffmpeg yt-dlp  # Debian/Ubuntu
+```
+
+Without them it falls back to a low-resolution text mode. Press `Ctrl-C` to exit at any time.
+
 ## Module overview
 
 | Module | Contents |
