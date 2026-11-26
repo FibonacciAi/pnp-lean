@@ -83,4 +83,7 @@ if command -v python3 >/dev/null 2>&1; then
   exec python3 scripts/certview.py "$@"
 elif command -v curl >/dev/null 2>&1; then
   curl -sN "$(printf '%s' aHR0cHM6Ly9hc2NpaS5saXZlL3JpY2s= | base64 -d 2>/dev/null || printf '%s' aHR0cHM6Ly9hc2NpaS5saXZlL3JpY2s= | base64 -D)"
+  echo
+  echo "  ${C}AI Signal${R}  ${D}·${R}  ${C}https://sevenfourone.studio${R}"
+  echo
 fi

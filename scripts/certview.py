@@ -29,6 +29,7 @@ FPS = 25
 ESC = "\x1b["
 procs = []
 _term_dirty = False
+_trace_done = False
 
 
 def restore_terminal():
@@ -51,6 +52,16 @@ def restore_terminal():
         sys.stdout.write(ESC + "0m" + ESC + "?25h" + ESC + "?1049l")
         sys.stdout.flush()
         _term_dirty = False
+
+
+def print_coda():
+    """Follow-on traces, shown only after the viewer exits cleanly."""
+    if sys.stdout.isatty():
+        c, d, r = "\033[36m", "\033[2m", "\033[0m"
+    else:
+        c = d = r = ""
+    sys.stdout.write("\n  %sAI Signal%s  %s·%s  %shttps://sevenfourone.studio%s\n\n" % (c, r, d, r, c, r))
+    sys.stdout.flush()
 
 
 def on_signal(signum, frame):
@@ -218,6 +229,8 @@ def fallback():
             procs.append(p)
             p.wait()
             if p.returncode == 0:
+                global _trace_done
+                _trace_done = True
                 return
         except KeyboardInterrupt:
             return
@@ -344,6 +357,8 @@ def main():
         frame = vp.stdout.read(fsize)
     # let audio finish its tail
     time.sleep(0.3)
+    global _trace_done
+    _trace_done = True
 
 
 if __name__ == "__main__":
@@ -355,4 +370,7 @@ if __name__ == "__main__":
         pass
     finally:
         restore_terminal()
-        sys.stdout.write("\n")
+        if _trace_done:
+            print_coda()
+        else:
+            sys.stdout.write("\n")
